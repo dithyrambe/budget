@@ -8,7 +8,12 @@ dynamic = ["version"]
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["pandas>=2.3.2", "typer>=0.19.1"]
+dependencies = [
+    "pandas>=2.3.2",
+    "pendulum>=3.1.0",
+    "pyarrow>=21.0.0",
+    "typer>=0.19.1",
+]
 
 [project.scripts]
 budget = "budget.cli.__main__:cli"
@@ -21,3 +26,9 @@ packages = ["src/budget"]
 
 [tool.ruff]
 line-length = 100
+
+[dependency-groups]
+dev = [
+    "ipython>=9.5.0",
+    "pytest>=8.4.2",
+]
