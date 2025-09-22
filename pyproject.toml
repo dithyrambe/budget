@@ -8,13 +8,16 @@ dynamic = ["version"]
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["pandas>=2.3.2", "typer>=0.19.1"]
 
 [project.scripts]
-budget = "budget.cli:main"
+budget = "budget.cli.__main__:cli"
 
 [tool.hatch.version]
 source = "vcs"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/budget"]
+
+[tool.ruff]
+line-length = 100
