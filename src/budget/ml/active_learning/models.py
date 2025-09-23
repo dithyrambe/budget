@@ -45,7 +45,9 @@ class Dataset:
     def from_dataframe(cls, df: DataFrame) -> Self:
         records = df.to_dict(orient="records")
         dataset = cls(
-            records=[Record(data=record, label=record.pop(LABEL_COLNAME)) for record in records]
+            records=[
+                Record(data=record, label=record.pop(LABEL_COLNAME, None)) for record in records
+            ]
         )
         return dataset
 
