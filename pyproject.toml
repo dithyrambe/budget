@@ -9,10 +9,11 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "pandas>=2.3.2",
-    "pendulum>=3.1.0",
-    "pyarrow>=21.0.0",
-    "typer>=0.19.1",
+  "pandas>=2.3.2",
+  "pendulum>=3.1.0",
+  "pyarrow>=21.0.0",
+  "textual>=0.85.0",
+  "typer>=0.19.1",
 ]
 
 [project.scripts]
@@ -28,7 +29,8 @@ packages = ["src/budget"]
 line-length = 100
 
 [dependency-groups]
-dev = [
-    "ipython>=9.5.0",
-    "pytest>=8.4.2",
-]
+dev = ["ipython>=9.5.0", "pytest>=8.4.2"]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
