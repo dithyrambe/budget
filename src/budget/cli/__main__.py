@@ -1,9 +1,11 @@
 from typer import Exit, Option, Typer, echo
 
 from budget import PACKAGE_NAME
+from budget.cli.labeling import cli as labeling_cli
 
 
 cli = Typer(add_completion=False)
+cli.add_typer(labeling_cli, name="labeling")
 
 
 def show_version(flag: bool):

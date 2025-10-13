@@ -7,12 +7,14 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Vertical
 from textual.reactive import reactive
-from textual.widgets import Footer, Header, Label, Static
+from textual.widgets import Footer, Label, Static
+import numpy as np
 
 from budget.categories import Category
+from budget.ml.active_learning.exceptions import NoMoreUnlabeledRecord
 from budget.ml.active_learning.learner import ActiveLearner
 from budget.ml.active_learning.models import Dataset, Record
-from budget.ml.active_learning.strategies import Strategy
+from budget.ml.active_learning.strategies import Pick, Strategy
 
 
 class RecordDisplay(Static):
@@ -103,16 +105,20 @@ class LabelsPanel(Static):
         """React to changes in selected index."""
         self.update_display()
 
-    def update_display(self) -> None:
+    def update_display(self, pick: Pick | None = None) -> None:
         """Update the labels display with highlighting."""
         content = "🏷️ [bold]Labels[/bold]\n\n"
+        scores = pick and pick.scores or [None] * len(self.labels)
 
-        for i, label in enumerate(self.labels):
+        for i, (label, score) in enumerate(zip(self.labels, scores)):
             prefix = "▶ " if i == self.selected_index else "  "
             highlight = "[reverse]" if i == self.selected_index else ""
             end_highlight = "[/reverse]" if i == self.selected_index else ""
+            start_score = "(" if score else ""
+            score = f"{score:.2f}" if score else ""
+            end_score = ")" if score else ""
 
-            content += f"{prefix}{highlight}{i + 1}. {label.upper()}{end_highlight}\n"
+            content += f"{prefix}{highlight}{i + 1}. {label.upper()} {start_score}{score}{end_score} {end_highlight}\n"
 
         self.update(content)
 
@@ -180,17 +186,16 @@ class LabelingApp(App):
         self.learner = learner
         self.labels = [label.value for label in labels]
         self.save_path = save_path
-        self.current_record: Optional[Record] = None
+        self.current_pick: Optional[Pick] = None
         self.selected_label_index = 0
 
     def compose(self) -> ComposeResult:
         """Create the TUI layout."""
-        yield Header()
 
         with Container(id="main-container"):
             # Left panel - Record display
             with Vertical(id="record-panel"):
-                yield Label("🏷️  Dataset Labeling Interface", classes="title")
+                yield Label("🏷️ Dataset Labeling Interface", classes="title")
                 self.record_display = RecordDisplay()
                 yield self.record_display
 
@@ -211,28 +216,35 @@ class LabelingApp(App):
     def on_mount(self) -> None:
         """Initialize the app when mounted."""
         self.load_next_record()
-        self.labels_panel.update_display()
+        self.labels_panel.update_display(self.current_pick)
         self.stats_panel.update_stats(self.learner.dataset)
 
     def load_next_record(self) -> None:
         """Load the next unlabeled record."""
         try:
-            self.current_record = self.learner.strategy.pick(self.learner.dataset)
-            self.record_display.update_record(self.current_record)
-        except Exception as e:
-            self.notify(f"No more unlabeled records: {e}", severity="info")
-            self.current_record = None
+            self.current_pick = self.learner.strategy.pick(self.learner.dataset)
+            self.record_display.update_record(self.current_pick.record)
+            if self.current_pick.scores:
+                index = int(np.argmax(self.current_pick.scores))
+                self.selected_label_index = index
+                self.labels_panel.set_selected_index(index)
+            self.labels_panel.update_display(self.current_pick)
+        except NoMoreUnlabeledRecord as e:
+            self.notify(f"No more unlabeled records: {e}")
+            self.current_pick = None
             self.record_display.update("🎉 All records have been processed!")
 
     def action_next_label(self) -> None:
         """Move to next label (vim j)."""
         self.selected_label_index = (self.selected_label_index + 1) % len(self.labels)
         self.labels_panel.set_selected_index(self.selected_label_index)
+        self.labels_panel.update_display(self.current_pick)
 
     def action_prev_label(self) -> None:
         """Move to previous label (vim k)."""
         self.selected_label_index = (self.selected_label_index - 1) % len(self.labels)
         self.labels_panel.set_selected_index(self.selected_label_index)
+        self.labels_panel.update_display(self.current_pick)
 
     def action_next_record(self) -> None:
         """Move to next record (vim l)."""
@@ -244,12 +256,12 @@ class LabelingApp(App):
 
     def action_confirm_label(self) -> None:
         """Apply the selected label to current record."""
-        if not self.current_record:
+        if not self.current_pick:
             self.notify("No record to label", severity="warning")
             return
 
         selected_label = self.labels[self.selected_label_index]
-        self.current_record.label_as(selected_label)
+        self.current_pick.record.label_as(selected_label)
         self.stats_panel.update_stats(self.learner.dataset)
         self.load_next_record()
 
@@ -262,7 +274,7 @@ class LabelingApp(App):
         if self.save_path:
             try:
                 self.learner.dataset.dump(self.save_path)
-                self.notify(f"Progress saved to {self.save_path}", severity="success")
+                self.notify(f"Progress saved to {self.save_path}")
             except Exception as e:
                 self.notify(f"Failed to save: {e}", severity="error")
         else:

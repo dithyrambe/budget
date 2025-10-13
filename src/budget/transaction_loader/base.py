@@ -4,8 +4,10 @@ from pathlib import Path
 
 import pandas as pd
 
+from budget.exceptions import BudgetException
 
-class SchemaValidationException(Exception): ...
+
+class SchemaValidationException(BudgetException): ...
 
 
 @dataclass
