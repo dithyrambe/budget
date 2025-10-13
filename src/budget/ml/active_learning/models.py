@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterator, Protocol, Self
+from typing import Any, Iterator, Self
 
 import pandas as pd
 from pandas import DataFrame
@@ -50,9 +50,3 @@ class Dataset:
             ]
         )
         return dataset
-
-
-class Model(Protocol):
-    def fit(self, X: Any, y: Any) -> Self: ...
-
-    def predict(self, X: Any): ...
