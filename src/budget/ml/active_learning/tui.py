@@ -36,7 +36,7 @@ class RecordDisplay(Static):
             return
 
         # Format record data in a readable way
-        content = "📋 [bold]Current Record[/bold]\n\n"
+        content = "[bold]Current Record[/bold]\n\n"
         if isinstance(self.record.data, dict):
             for key, value in self.record.data.items():
                 content += f"[bold]{key}[/bold]: {value}\n"
@@ -44,9 +44,9 @@ class RecordDisplay(Static):
             content += f"[bold]Data[/bold]: {self.record.data}\n"
 
         if self.record.label:
-            content += f"\n🏷️  [bold]Current Label[/bold]: {self.record.label}"
+            content += f"\n[bold]Current Label[/bold]: {self.record.label}"
         else:
-            content += "\n🏷️  [bold]Status[/bold]: Unlabeled"
+            content += "\n[bold]Status[/bold]: Unlabeled"
 
         self.update(content)
 
@@ -82,7 +82,7 @@ class StatsPanel(Static):
         else:
             progress = (self.labeled_count / self.total_count) * 100
 
-        content = f"""📊 Progress
+        content = f"""Progress
 
 Labeled: {self.labeled_count}
 Unlabeled: {self.unlabeled_count}
@@ -107,7 +107,7 @@ class LabelsPanel(Static):
 
     def update_display(self, pick: Pick | None = None) -> None:
         """Update the labels display with highlighting."""
-        content = "🏷️ [bold]Labels[/bold]\n\n"
+        content = "[bold]Labels[/bold]\n\n"
         scores = pick and pick.scores or [None] * len(self.labels)
 
         for i, (label, score) in enumerate(zip(self.labels, scores)):
@@ -195,7 +195,7 @@ class LabelingApp(App):
         with Container(id="main-container"):
             # Left panel - Record display
             with Vertical(id="record-panel"):
-                yield Label("🏷️ Dataset Labeling Interface", classes="title")
+                yield Label("Dataset Labeling Interface", classes="title")
                 self.record_display = RecordDisplay()
                 yield self.record_display
 
@@ -232,7 +232,7 @@ class LabelingApp(App):
         except NoMoreUnlabeledRecord as e:
             self.notify(f"No more unlabeled records: {e}")
             self.current_pick = None
-            self.record_display.update("🎉 All records have been processed!")
+            self.record_display.update("All records have been processed!")
 
     def action_next_label(self) -> None:
         """Move to next label (vim j)."""
