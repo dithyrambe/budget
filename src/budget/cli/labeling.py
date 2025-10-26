@@ -71,7 +71,6 @@ def launch_ui(
 
     model = get_default_model()
     model.fit(X=training_tx, y=training_tx[LABEL_COLNAME])
-    __import__("IPython").embed()
 
     strategy = AmbiguousStrategy(model=model, refit=True)
     learner = ActiveLearner(dataset=dataset, strategy=strategy)
