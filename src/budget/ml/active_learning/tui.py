@@ -184,7 +184,7 @@ class LabelingApp(App):
     ):
         super().__init__()
         self.learner = learner
-        self.labels = [label.value for label in labels]
+        self.labels = sorted([label.value for label in labels])
         self.save_path = save_path
         self.current_pick: Optional[Pick] = None
         self.selected_label_index = 0
