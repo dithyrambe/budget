@@ -7,7 +7,7 @@ from typer import Exit, Typer, Option, echo
 import pandas as pd
 
 from budget.categories import Category
-from budget.transaction_loader import BanquePopulaireLoader
+from budget.transaction_loader import BanquePopulaireLoader, CreditLyonnaisLoader
 from budget.ml.active_learning.learner import ActiveLearner, get_default_model
 from budget.ml.active_learning.models import LABEL_COLNAME, Dataset
 from budget.ml.active_learning.strategies import AmbiguousStrategy
@@ -19,11 +19,13 @@ cli = Typer(add_completion=False)
 
 class Loader(Enum):
     BANQUE_POPULAIRE = "banque-populaire"
+    CREDIT_LYONNAIS = "credit-lyonnais"
 
     @property
     def loader(self) -> TransactionLoader:
         loaders = {
             Loader.BANQUE_POPULAIRE.value: BanquePopulaireLoader(),
+            Loader.CREDIT_LYONNAIS.value: CreditLyonnaisLoader(),
         }
         return loaders[self.value]
 

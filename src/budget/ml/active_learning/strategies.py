@@ -40,7 +40,6 @@ class AmbiguousStrategy(Strategy):
             training_dataset = Dataset(records=[*dataset.get_labeled()])
             training_tx = training_dataset.to_dataframe()
             self.model.fit(X=training_tx, y=training_tx[LABEL_COLNAME])
-
         unlabeled = Dataset(records=[*dataset.get_unlabeled()])
         if not unlabeled:
             raise NoMoreUnlabeledRecord("All dataset records has been labeled")
